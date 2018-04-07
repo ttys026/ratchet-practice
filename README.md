@@ -1,5 +1,6 @@
 # ratchet-practice
 A simple practice of multi-clients management in ratchet websocket server
+- [x] Passing customized userId to server via URL
 - [x] Send to spcific user by userId
 - [x] Limit one connection per user
 - [x] Kick out notification
