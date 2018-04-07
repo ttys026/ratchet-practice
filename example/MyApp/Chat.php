@@ -18,7 +18,7 @@ class Chat implements MessageComponentInterface {
     public function onOpen(ConnectionInterface $conn) {
         try {
             $query = $conn->httpRequest->getUri()->getQuery();
-			      //get query from URL like that ws://127.0.0.1:8080/?id=123456
+			      //get query from URL like ws://127.0.0.1:8080/?id=123456
             $query_list = explode("&", $query);
 
             $usr = trim(substr($query_list[0], 3));
@@ -105,7 +105,7 @@ class Chat implements MessageComponentInterface {
 					
                 } catch (Exception $e) {
                     //If sending by websocket failed
-					          //Need ti send message to database here.
+		    //Need to send message to database here.
 					
                     echo 'send by db2'.PHP_EOL;
                 }
