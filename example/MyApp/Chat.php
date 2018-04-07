@@ -14,7 +14,7 @@ class Chat implements MessageComponentInterface {
     public function onOpen(ConnectionInterface $conn) {
         try {
             $query = $conn->httpRequest->getUri()->getQuery();
-                  //get query from URL like ws://127.0.0.1:8080/?id=123456
+            //get query from URL like ws://127.0.0.1:8080/?id=123456
             $query_list = explode("&", $query);
             $usr = trim(substr($query_list[0], 3));
             if($usr != ''){
@@ -24,24 +24,24 @@ class Chat implements MessageComponentInterface {
                 $user_id = $this->id;
                 $this->id = $this->id + 1;
             }
-              // Use an auto increment id if you don't specify one in URL.
+            // Use an auto increment id if you don't specify one in URL.
             $conn->httpRequest->set_userId($user_id);
-                  //The setter located at vendor/guzzlehttp/psr7/src/Request.php
-                  //Saving user id and map it to specific connection
+            //The setter located at vendor/guzzlehttp/psr7/src/Request.php
+            //Saving user id and map it to specific connection
             if(isset($this->users[$user_id]) && !is_null($user_id)){
                 $this->users[$user_id]->send(json_encode(array(
                     'type'=>'logOutUser'
                 )));
-                      //Sending some information tell the old connection have been logged out.
-                
+                //Sending some information tell the old connection have been logged out.
+
                 $this->users[$user_id]->httpRequest->set_deleteFlag(false);
-                      // DeleteFlag also located at vendor/guzzlehttp/psr7/src/Request.php
-                      // It is necessary to have the flag in order to abort closed connections correctly.
-                
+                // DeleteFlag also located at vendor/guzzlehttp/psr7/src/Request.php
+                // It is necessary to have the flag in order to abort closed connections correctly.
+
                 $this->users[$user_id]->close();
                 unset($this->users[$user_id]);
-                    echo 'kick out!!!!'.PHP_EOL;
-                  }
+                echo 'kick out!!!!'.PHP_EOL;
+            }
             $this->users[$user_id] = $conn;
             echo $user_id .' joined chat  '. (string)sizeof($this->users).'  user(s) online now!'.PHP_EOL;
             //...$res = $this->fetch_message($user_id);
@@ -52,49 +52,48 @@ class Chat implements MessageComponentInterface {
         }
     }
     public function onMessage(ConnectionInterface $from, $msg) {
-            $query = $from->httpRequest->getUri()->getQuery();
-            $query_list = explode("&", $query);
-            $sender = trim(substr($query_list[0], 3));
-            $json = json_decode($msg, true);
-            $receiver = isset($json['receiver']) ? $json['receiver'] : '';
-            $content = isset($json['content']) ? $json['content'] : '';
-            $image = isset($json['image']) ? $json['image'] : '';
-            // parse Json
-			
-            $receiverConn = isset($this->users[$receiver]) ? $this->users[$receiver] : null;
-            // Get the receiver's connection
-			
-            if($receiver == '' || $content == ''){
-                return;
-            }
-            //Abort on invalid Json information.
-			
-            if (is_null($receiverConn)) {
-                // The reseiver is offline.
-                // Sending message to database.
-                echo 'send by db'.PHP_EOL;
-            } 
-            else {
-                try {
-                    $receiverConn->send('['.json_encode(array(
-                        'id' => $insert,
+        $query = $from->httpRequest->getUri()->getQuery();
+        $query_list = explode("&", $query);
+        $sender = trim(substr($query_list[0], 3));
+        $json = json_decode($msg, true);
+        $receiver = isset($json['receiver']) ? $json['receiver'] : '';
+        $content = isset($json['content']) ? $json['content'] : '';
+        $image = isset($json['image']) ? $json['image'] : '';
+        // parse Json
+
+        $receiverConn = isset($this->users[$receiver]) ? $this->users[$receiver] : null;
+        // Get the receiver's connection
+
+        if($receiver == '' || $content == ''){
+            return;
+        }
+        //Abort on invalid Json information.
+
+        if (is_null($receiverConn)) {
+            // The reseiver is offline.
+            // Sending message to database.
+            echo 'send by db'.PHP_EOL;
+        }
+        else {
+            try {
+                $receiverConn->send('['.json_encode(array(
+                        'id' => '-1',
                         'sender' => $sender,
                         'receiver' => $receiver,
                         'datetime' => time(),
                         'content' => $content,
                         'image' => $image,
                     )).']');
-                    echo 'send by ws'.PHP_EOL;
-                    
-                } catch (Exception $e) {
-                    //If sending by websocket failed
-                    //Need to send message to database here.
-                    
-                    echo 'send by db2'.PHP_EOL;
-                }
-                $from->send('success');
-              }
+                echo 'send by ws'.PHP_EOL;
+
+            } catch (Exception $e) {
+                //If sending by websocket failed
+                //Need to send message to database here.
+                echo 'send by db2'.PHP_EOL;
             }
+            $from->send('success');
+        }
+    }
     public function onClose(ConnectionInterface $conn) {
         try {
             if ($conn->httpRequest->delete_flag) {
