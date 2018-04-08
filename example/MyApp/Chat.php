@@ -25,17 +25,17 @@ class Chat implements MessageComponentInterface {
                 $this->id = $this->id + 1;
             }
             // Use an auto increment id if you don't specify one in URL.
-            $conn->httpRequest->set_userId($user_id);
-            //The setter located at vendor/guzzlehttp/psr7/src/Request.php
+            $conn->__set('user_id', $user_id);
+            //The setter located at vendor/cboden/ratchet/src/Ratchet/AbstractConnectionDecorator.php
             //Saving user id and map it to specific connection
+            
             if(isset($this->users[$user_id]) && !is_null($user_id)){
                 $this->users[$user_id]->send(json_encode(array(
                     'type'=>'logOutUser'
                 )));
                 //Sending some information tell the old connection have been logged out.
 
-                $this->users[$user_id]->httpRequest->set_deleteFlag(false);
-                // DeleteFlag also located at vendor/guzzlehttp/psr7/src/Request.php
+                $this->users[$user_id]->__set('delete_flag', false);
                 // It is necessary to have the flag in order to abort closed connections correctly.
 
                 $this->users[$user_id]->close();
@@ -52,9 +52,7 @@ class Chat implements MessageComponentInterface {
         }
     }
     public function onMessage(ConnectionInterface $from, $msg) {
-        $query = $from->httpRequest->getUri()->getQuery();
-        $query_list = explode("&", $query);
-        $sender = trim(substr($query_list[0], 3));
+        $sender = $from->__get('user_id');
         $json = json_decode($msg, true);
         $receiver = isset($json['receiver']) ? $json['receiver'] : '';
         $content = isset($json['content']) ? $json['content'] : '';
@@ -96,9 +94,9 @@ class Chat implements MessageComponentInterface {
     }
     public function onClose(ConnectionInterface $conn) {
         try {
-            if ($conn->httpRequest->delete_flag) {
-                echo $conn->httpRequest->user_id .' left chat  '. (string)sizeof($this->users).'  user(s) online now!'.PHP_EOL;
-                unset($this->users[$conn->httpRequest->user_id]);
+            if (!$conn->__isset('delete_flag')) {
+                echo $conn->__get('user_id') .' left chat  '. (string)sizeof($this->users).'  user(s) online now!'.PHP_EOL;
+                unset($this->users[$conn->__get('user_id')]);
             }
             // Use the delete flag to check if the user is disconnectted and is not kicked out by logging elsewhere.
             // remove the connection from array.
