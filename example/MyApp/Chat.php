@@ -38,7 +38,9 @@ class Chat implements MessageComponentInterface {
                 $this->users[$user_id]->__set('delete_flag', false);
                 // It is necessary to have the flag in order to abort closed connections correctly.
 
-                $this->users[$user_id]->close();
+                $this->users[$user_id]->close(1);
+                //A better practice is to use close event code to indicate duplicate login.
+                
                 unset($this->users[$user_id]);
                 echo 'kick out!!!!'.PHP_EOL;
             }
