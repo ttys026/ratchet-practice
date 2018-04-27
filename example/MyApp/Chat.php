@@ -110,20 +110,29 @@ class Chat implements MessageComponentInterface {
         echo "An error has occurred: {$e->getMessage()}\n";
         $conn->close();
     }
+    
+    
+    //Auto reconnect after MySQL server has gone away 
     private function pdo() {
-        // This ensures we only create the PDO object once
-        /*
-        if(self::$pdo !== null) {
-            return self::$pdo;
+        if ($this->pdo === null) {
+            $this->reconnect();
         }
         try {
-            self::$pdo = new \PDO('mysql:host=127.0.0.1;dbname=test;charset=test', "test", "test",array(
-                \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
-            ));
-            date_default_timezone_set('America/Detroit');
-        }catch (\PDOException $e){
-            echo "Database connection Failed";
+            $sql = "SELECT 1";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute(array());
         }
-        return self::$pdo;*/
+        catch (\PDOException $e){
+            $this->reconnect();
+            return $this->pdo();
+        }
+        return $this->pdo;
     }
+    
+    private function reconnect() {
+        //$this->pdo = null;
+        //$this->pdo = new \PDO(...db info here);
+    }
+
+    
 }
