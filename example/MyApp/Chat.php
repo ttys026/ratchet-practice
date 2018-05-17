@@ -132,6 +132,14 @@ class Chat implements MessageComponentInterface {
     private function reconnect() {
         //$this->pdo = null;
         //$this->pdo = new \PDO(...db info here);
+        
+        /**** A persistent example
+        $this->pdo = new \PDO('mysql:host=127.0.0.1;dbname=test;charset=utf8mb4', "test", "test",array(
+            \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4",
+            \PDO::ATTR_PERSISTENT => true
+        ));
+        date_default_timezone_set('America/Detroit');
+        ****/
     }
 
     
